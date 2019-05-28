@@ -19,7 +19,16 @@ enum layers {
   _FN1,
   _FN2,
 };
-
+enum custom_keycodes {
+  DIVIDE_BY_2,
+  MULTPL_BY_2,
+};
+#define KT_UP LCTL(KC_BSPACE)
+#define KT_DN LCTL(KC_ENT)
+#define RENDER LCTL(KC_P)
+#define LRENDER LCTL(LSFT(KC_P))
+#define ADD_TO_CAT LALT(KC_C)
+#define CTL_B LCTL(KC_B)
 // setup Quad Tap Dance
 typedef struct {
   bool is_press_action;
@@ -48,6 +57,7 @@ void x_finished (qk_tap_dance_state_t *state, void *user_data);
 void x_reset (qk_tap_dance_state_t *state, void *user_data);
 
 // End tapdance setup
+
 //Tap Dance Definitions
 
 int cur_dance (qk_tap_dance_state_t *state) {
@@ -55,8 +65,6 @@ int cur_dance (qk_tap_dance_state_t *state) {
     if (state->pressed) return SINGLE_HOLD;
     else return SINGLE_TAP;
   }
-  //If count = 2, and it has been interrupted - assume that user is trying to type the letter associated
-  //with single tap.
   else if (state->count == 2) {
     if (state->pressed) return DOUBLE_HOLD;
     else return DOUBLE_TAP;
@@ -67,39 +75,24 @@ int cur_dance (qk_tap_dance_state_t *state) {
   }
   else return 8; //magic number. At some point this method will expand to work for more presses
 }
-
-
 //instanalize an instance of 'tap' for the 'x' tap dance.
 static tap xtap_state = {
   .is_press_action = true,
   .state = 0
 };
-
-
-
 void x_finished (qk_tap_dance_state_t *state, void *user_data) {
   xtap_state.state = cur_dance(state);
   switch (xtap_state.state) {
     case SINGLE_TAP: layer_move(_BASE); break;
     case DOUBLE_TAP: layer_move(_FN1); break;
     case TRIPLE_TAP: layer_move(_FN2); break;
-   // case DOUBLE_HOLD: register_code(KC_LALT); break;
-  //  case DOUBLE_SINGLE_TAP: register_code(KC_X); unregister_code(KC_X); register_code(KC_X);
-    //Last case is for fast typing. Assuming your key is `f`:
-    //For example, when typing the word `buffer`, and you want to make sure that you send `ff` and not `Esc`.
-    //In order to type `ff` when typing fast, the next character will have to be hit within the `TAPPING_TERM`, which by default is 200ms.
-  }
+ }
 }
-
-
-
 void x_reset (qk_tap_dance_state_t *state, void *user_data) {
   switch (xtap_state.state) {
     case SINGLE_TAP: layer_move(_BASE); break;
     case DOUBLE_TAP: layer_move(_FN1); break;
     case TRIPLE_TAP: layer_move(_FN2); break;
- //   case DOUBLE_HOLD: unregister_code(KC_LALT);
-//    case DOUBLE_SINGLE_TAP: unregister_code(KC_X);
   }
   xtap_state.state = 0;
 }
@@ -107,26 +100,16 @@ void x_reset (qk_tap_dance_state_t *state, void *user_data) {
 qk_tap_dance_action_t tap_dance_actions[] = {
   [X_CTL]     = ACTION_TAP_DANCE_FN_ADVANCED(NULL,x_finished, x_reset)
 };
+// End TapDance Setup
 
-
-
-
-
-// Defines the keycodes used by our macros in process_record_user
-/*enum custom_keycodes {
-  KT_UP
-};
-*/
-#define KT_UP LCTL(KC_BSPACE)
-#define KT_DN LCTL(KC_KP_ENTER)
-
+// Layout
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
   [_BASE] = LAYOUT_ortho_4x4(
-    TD(X_CTL),  KC_HOME,  KC_KP_PLUS,    KT_UP , \
-    KC_PGDN,  KC_LEFT,  KC_KP_MINUS,  KT_DN, \
-    MO(_FN2), KC_VOLU,  KC_MPLY,  KC_MPRV, \
-    MO(_FN1), KC_VOLD,  KC_MUTE,  KC_MNXT  \
+    TD(X_CTL),  MULTPL_BY_2,    KC_KP_PLUS,    KT_UP , \
+    KC_VOLU,    DIVIDE_BY_2,    KC_KP_MINUS,   KT_DN, \
+    KC_VOLD, KC_VOLU,           CTL_B,         LRENDER, \
+    MO(_FN1), ADD_TO_CAT,       LRENDER,       RENDER  \
   ),
   [_FN1] = LAYOUT_ortho_4x4(
     TD(X_CTL),   KC_P7,    RESET,    KC_P9,   \
@@ -145,15 +128,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 // Common LED indicator
 void update_led(void) {
-  // Capslock priority
    {
-    // look layer...
     switch (biton32(layer_state)) {
       case _FN1:
         rgblight_setrgb(RGB_CORAL);
         break;
       case _FN2:
-        rgblight_setrgb(RGB_GOLD);
+        rgblight_setrgb(RGB_RED);
         break;
       default:
         rgblight_setrgb(RGB_WHITE);
@@ -161,34 +142,29 @@ void update_led(void) {
     }
   }
 }
-
-void led_set_user(uint8_t usb_led) {
-  // must be trigger to
-  // - activate capslock color
-  // - go back to the proper layer color if needed when quitting capslock
-  update_led();
-}
-
 uint32_t layer_state_set_user(uint32_t state) {
-  // must be trigger to
-  // - activate a layer color
-  // - de-activate a layer color
   update_led();
   return state;
 }
-/*
+// Macro's
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
-    case KT_UP:
+    case DIVIDE_BY_2:
       if (record->event.pressed) {
-        // when keycode QMKBEST is pressed
-        SEND_STRING("QMK is the best thing ever!");
+        register_code16(KC_BTN1);
+        unregister_code16(KC_BTN1);
+        SEND_STRING("/2" SS_TAP(X_ENTER));
       } else {
-        // when keycode QMKBEST is released
       }
       break;
-
+    case MULTPL_BY_2:
+      if (record->event.pressed) {
+        register_code16(KC_BTN1);
+        unregister_code16(KC_BTN1);
+        SEND_STRING("*2" SS_TAP(X_ENTER));
+      } else {
+      }
+      break;
   }
   return true;
 }
-*/
