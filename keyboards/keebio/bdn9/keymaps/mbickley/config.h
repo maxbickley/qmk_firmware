@@ -69,3 +69,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define MOUSEKEY_WHEEL_TIME_TO_MAX 0
 #define MOUSEKEY_WHEEL_MAX_SPEED 50
 #define MK_W_OFFSET_UNMOD 10
+
+#define TAPPING_TERM 175
+#define DANCING_TERM 175

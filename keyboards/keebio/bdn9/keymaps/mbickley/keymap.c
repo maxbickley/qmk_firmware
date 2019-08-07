@@ -14,12 +14,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include QMK_KEYBOARD_H
-//Define Special Keys 
-enum BDN9_Keys {
-    U_LAYR = SAFE_RANGE,
-    D_LAYR,
-    LAYER
-};
+#include "tap_dance_setup.c" // Setup Tap Dance
+#include "tap_dance_enum.c" // Where Tap Dance enums are stored
+#include "scln_coln.c" // Tap dance for ;:
+#include "tap_dance_actions.c" // All other Tap Dances
+#include "katana_shortcuts.c" // Katana Hotkeys
+
 //Define layers for BDN9
 enum BDN9_layers {
     _MEDIA = 0,
@@ -47,13 +47,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         | KNB_0: Up/Down    |       | KNB_1: Tab/Shift Tab |
         | Press: Enter      |       | Press: Tilde         |
         | ----------------- | LAYER | -----------------    |
-        | Control + Shift   | KP +  | Live Render          |
+        | Control + Shift   | KP +  | Live/Preview Render  |
         | Control + Enter   | KP -  | Control + B          |
      */
     [_KATANA] = LAYOUT(
-        KC_ENT          ,  MO(_UTIL)  , KC_GRAVE         ,
-        LCTL(KC_LSFT)   ,  KC_PLUS    , LCTL(LSFT(KC_P)) ,
-        LCTL(KC_ENT)    ,  KC_MINS    , LCTL(KC_B)
+        KC_ENT  ,  MO(_UTIL)  , KC_GRAVE    ,
+        KTNA_UP ,  KC_PLUS , KTNA_RENDER ,
+        KTNA_IN ,  KC_MINS , LCTL(KC_B)
     ),
 //------------------------------------------------------------------
     /*  RV Layout -- RV Hotkeys
@@ -69,6 +69,18 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_LBRC       , LCTL(LSFT(KC_COMM)) , KC_RBRC
     ),
 //----------------------------------------------------------
+    /*  Reeder - Hotkeys for Feedbin
+        | Knob 1: j/k           |      | Knob 2: n/p           |
+        | Press: H              | S    | R                     |
+        | CMD+TAB               | M    | L                     |
+        | Cmd+1                 | Cmd+2| Cmd+3                 |
+     */
+    [_REEDER] = LAYOUT(
+        KC_H, KC_S, KC_R,
+        CMD_TAB, KC_M, DTP_LGT,
+        G(KC_1), G(KC_2), DTP_MGC
+    ),
+//----------------------------------------------------------
 //Utility Layer for adjusting Layer,LEDs,RESET,Etc
 /*----------------------------------------------------------
         | KNB_0: Layer Up/Down |       | KNB_1: LED +/- |
@@ -80,8 +92,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_UTIL] = LAYOUT(
         KC_ENT          ,  _______ , KC_GRAVE  ,
         LCTL(KC_LSFT)   ,  TO(_MEDIA)  , TO(_KATANA) ,
-        LCTL(KC_ENT)    ,  TO(_RV)     , LCTL(KC_B)
-    ),    
+        TO(_REEDER)    ,  TO(_RV)     , TO(_REEDER)
+    ),   
 };
 
 void encoder_update_user(uint8_t index, bool clockwise) {
