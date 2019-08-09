@@ -23,29 +23,31 @@
 
 //Define layers for BDN9
 enum BDN9_layers {
-    _MEDIA = 0,
+    _BROWSE = 0,
     _KATANA,
     _RV,
-    _UTIL,
     _FEEDBIN,
+    _UTIL,
     };
 
 //Define custom keycodes for BDN9 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     /*  Default Layout -- For general browsing
+        __________________________________________________
         | KNB_0: Vol Dn/Up  |       | KNB_1: Scroll      |
         | Press: Mute       |       | Press: Play/Pause  |
         | ----------------- | LAYER | -----------------  |
         | Scroll Left       | Home  | Scroll Right       |
         | Back              | End   | Forward            |
      */
-    [_MEDIA] = LAYOUT(
+    [_BROWSE] = LAYOUT(
         KC_MUTE ,  MO(_UTIL)  , KC_MPLY,
         KC_WH_L ,  KC_HOME    , KC_WH_R,
         KC_WBAK ,  KC_END     , KC_WFWD
     ),
 //----------------------------------------------------------
     /*  Katana Layout -- General Katana Work
+        ____________________________________________________
         | KNB_0: Up/Down    |       | KNB_1: Tab/Shift Tab |
         | Press: Enter      |       | Press: Tilde         |
         | ----------------- | LAYER | -----------------    |
@@ -54,11 +56,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      */
     [_KATANA] = LAYOUT(
         KC_ENT  ,  MO(_UTIL)  , KC_GRAVE    ,
-        KTNA_UP ,  KC_PLUS , KTNA_RENDER ,
+        KTNA_UP ,  KC_PLUS , TD(KTNA_RENDER) ,
         KTNA_IN ,  KC_MINS , LCTL(KC_B)
     ),
 //------------------------------------------------------------------
     /*  RV Layout -- RV Hotkeys
+        ____________________________________________________________
         | KNB_0: Scroll Up/Down |            | KNB_1: Page Up/Down |
         | Press: Shift + Home   |            | Press:   \          |
         | --------------------- |    LAYER   | -----------------   |
@@ -70,39 +73,42 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         LALT(KC_UP)   , LCTL(LSFT(KC_DOT))  , LALT(KC_DOWN) ,
         KC_LBRC       , LCTL(LSFT(KC_COMM)) , KC_RBRC
     ),
-//----------------------------------------------------------
+//------------------------------------------------------------------
     /*  Feedbin Layout -- Feedbin.me hotkeys
+        ____________________________________________________________
         | KNB_0: Next/Previous  |            | KNB_1: Page Up/Down |
         | Press:     Star       |            | Press: Read/Unread  |
         | --------------------- |    LAYER   | -----------------   |
-        |     Open Original     | Expand Tag |      Alt + Down     |
+        |     Open Original     | Expand Tag |   Load from link    |
         |         Left          |    Space   |        Right        |
      */
     [_FEEDBIN] = LAYOUT(
         KC_S   , MO(_UTIL) , KC_M,
-        KC_V   , KC_E      , KC_H,
+        KC_V   , KC_E      , KC_C,
         KC_LEFT, KC_SPACE  , KC_RIGHT
     ),
-//----------------------------------------------------------
-//Utility Layer for adjusting Layer,LEDs,RESET,Etc
-/*----------------------------------------------------------
-        | KNB_0: Layer Up/Down |       | KNB_1: LED +/- |
-        | Press: Default Layer |       | Press: LED Off |
+//------------------------------------------------------------------
+    /*  Utility Layer for adjusting Layer,LEDs,RESET,Etc
+        _________________________________________________
+        | KNB_0: LED +/-       |       | KNB_1: LED MODE|
+        | Press: Static LED    |       | Press: LED Off |
         | -------------------- | LAYER | -------------- |
         |         RESET        | LED + | Live Render    |
         |        RGB Mode      | LED - | Control + B    |
 */
     [_UTIL] = LAYOUT(
-        KC_ENT          ,  _______ , KC_GRAVE  ,
-        LCTL(KC_LSFT)   ,  TO(_MEDIA)  , TO(_KATANA) ,
-        TO(_FEEDBIN)    ,  TO(_RV)     , TO(_FEEDBIN)
+        RGB_MODE_PLAIN  ,  _______      , RGB_TOG     ,
+         _______        ,  TO(_BROWSE)  , TO(_KATANA) ,
+        TO(_FEEDBIN)    ,  TO(_RV)      ,  _______
     ),   
 };
+
+// Rotary Encoder Code
 
 void encoder_update_user(uint8_t index, bool clockwise) {
     if (index == 0) {
         switch (biton32(layer_state)) {
-            case _MEDIA: // Media Layer Left Rotary Encoder
+            case _BROWSE: // Media Layer Left Rotary Encoder
                 if (!clockwise) {
                     tap_code(KC_VOLU);
                 } else {
@@ -122,12 +128,26 @@ void encoder_update_user(uint8_t index, bool clockwise) {
                 } else {
                     tap_code(KC_WH_D);
                 }
-            break;  
+            break;
+            case _FEEDBIN: // Feedbin Layer Left Rotary Encoder
+                if (clockwise) {
+                    tap_code(KC_J);
+                } else {
+                    tap_code(KC_K);
+                }
+            break; 
+            case _UTIL: // Util Layer Left Rotary Encoder
+                if (clockwise) {
+                    rgblight_decrease_val();
+                } else {
+                    rgblight_increase_val();
+                }
+            break;   
         }
     }
     else if (index == 1) {
         switch (biton32(layer_state)) {
-            case _MEDIA: // Media Layer Right Rotary Encoder
+            case _BROWSE: // Media Layer Right Rotary Encoder
                 if (!clockwise) {
                     tap_code(KC_WH_U);
                 } else {
@@ -149,49 +169,56 @@ void encoder_update_user(uint8_t index, bool clockwise) {
                     tap_code(KC_PGDN);
                 }
             break;  
+            case _FEEDBIN: // Feedbin Layer Right Right Encoder
+                if (clockwise) {
+                    tap_code(KC_PGUP);
+                } else {
+                    tap_code(KC_PGDN);
+                }
+            break;
+            case _UTIL: // Util Layer Right Rotary Encoder
+                if (clockwise) {
+                    rgblight_step();
+                } else {
+                    rgblight_step_reverse();
+                }
         }
     }
 };
 
-
-
-
-
-/*
-// Sets up Layer Moving
-bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
-  keypos_t key;
-  //Define variables
-  uint8_t current_layer;
-  uint8_t next_layer;
-  switch (keycode) {
-  case U_LAYR: //cycles up the layers
-    if (!record->event.pressed) {
-      current_layer = layer_switch_get_layer(key);
-      next_layer = current_layer+1;
-      layer_move(next_layer);
-    }
-    break;
-  case D_LAYR: //cycles down the layers
-    if (!record->event.pressed) {
-      current_layer = layer_switch_get_layer(key);
-      next_layer = current_layer-1;
-      layer_move(next_layer);
-    }
-    break;
-  }
-  return true;
-};
-    keypos_t key;
-    uint8_t current_layer;
-    uint8_t next_layer;
-                if (clockwise) {
-                        current_layer = layer_switch_get_layer(key);
-                         next_layer = current_layer+1;
-                        layer_move(next_layer);
-                } else {
-                        current_layer = layer_switch_get_layer(key);
-                         next_layer = current_layer-1;
-                        layer_move(next_layer);
-                }
+// Common LED indicator
+/*Layers
+    _BROWSE = 0,
+    _KATANA,
+    _RV,
+    _UTIL,
+    _FEEDBIN,
 */
+void update_led(void) {
+   {
+    switch (biton32(layer_state)) {
+      case _BROWSE:
+        rgblight_setrgb(RGB_WHITE); // Browse color.
+        break;
+      case _KATANA:
+        rgblight_setrgb(214,162,0); // Katana color.
+        break;
+      case _RV:
+        rgblight_setrgb(49,170,0); // RV color.
+        break;
+      case _FEEDBIN:
+        rgblight_setrgb(0,64,160); // Feedbin color.
+        break;
+      case _UTIL:
+        rgblight_setrgb(0,175,106); // Util color.
+        break;
+      default:
+        rgblight_setrgb(RGB_WHITE); // 
+        break;
+    }
+  }
+}
+uint32_t layer_state_set_user(uint32_t state) {
+  update_led();
+  return state;
+}
