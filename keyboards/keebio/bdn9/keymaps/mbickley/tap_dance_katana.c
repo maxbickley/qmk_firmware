@@ -6,7 +6,7 @@ static tap katana_render = { //delcare
 };
 
 void katana_render_finished(qk_tap_dance_state_t *state, void *user_data) {
-    katana_render.state = current_dance(state);_
+    katana_render.state = current_dance(state);
     switch (katana_render.state) {
         case SINGLE_TAP: //Live Render Hotkey
             register_code(KC_LCTL);

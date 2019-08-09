@@ -17,6 +17,7 @@
 #include "tap_dance_setup.c" // Setup Tap Dance
 #include "tap_dance_enum.c" // Where Tap Dance enums are stored
 #include "scln_coln.c" // Tap dance for ;:
+#include "tap_dance_katana.c"
 #include "tap_dance_actions.c" // All other Tap Dances
 #include "katana_shortcuts.c" // Katana Hotkeys
 
@@ -25,7 +26,8 @@ enum BDN9_layers {
     _MEDIA = 0,
     _KATANA,
     _RV,
-    _UTIL
+    _UTIL,
+    _FEEDBIN,
     };
 
 //Define custom keycodes for BDN9 
@@ -69,16 +71,17 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_LBRC       , LCTL(LSFT(KC_COMM)) , KC_RBRC
     ),
 //----------------------------------------------------------
-    /*  Reeder - Hotkeys for Feedbin
-        | Knob 1: j/k           |      | Knob 2: n/p           |
-        | Press: H              | S    | R                     |
-        | CMD+TAB               | M    | L                     |
-        | Cmd+1                 | Cmd+2| Cmd+3                 |
+    /*  Feedbin Layout -- Feedbin.me hotkeys
+        | KNB_0: Next/Previous  |            | KNB_1: Page Up/Down |
+        | Press:     Star       |            | Press: Read/Unread  |
+        | --------------------- |    LAYER   | -----------------   |
+        |     Open Original     | Expand Tag |      Alt + Down     |
+        |         Left          |    Space   |        Right        |
      */
-    [_REEDER] = LAYOUT(
-        KC_H, KC_S, KC_R,
-        CMD_TAB, KC_M, DTP_LGT,
-        G(KC_1), G(KC_2), DTP_MGC
+    [_FEEDBIN] = LAYOUT(
+        KC_S   , MO(_UTIL) , KC_M,
+        KC_V   , KC_E      , KC_H,
+        KC_LEFT, KC_SPACE  , KC_RIGHT
     ),
 //----------------------------------------------------------
 //Utility Layer for adjusting Layer,LEDs,RESET,Etc
@@ -92,7 +95,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_UTIL] = LAYOUT(
         KC_ENT          ,  _______ , KC_GRAVE  ,
         LCTL(KC_LSFT)   ,  TO(_MEDIA)  , TO(_KATANA) ,
-        TO(_REEDER)    ,  TO(_RV)     , TO(_REEDER)
+        TO(_FEEDBIN)    ,  TO(_RV)     , TO(_FEEDBIN)
     ),   
 };
 
