@@ -14,13 +14,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include QMK_KEYBOARD_H
-#include "tap_dance_setup.c" // Setup Tap Dance
-#include "tap_dance_enum.c" // Where Tap Dance enums are stored
-#include "scln_coln.c" // Tap dance for ;:
-#include "tap_dance_katana.c"
-#include "tap_dance_actions.c" // All other Tap Dances
+#include "tap_dance_include.c" // Setup Tap Dance
 #include "katana_shortcuts.c" // Katana Hotkeys
 
+#define UT_TILD LT(_UTIL, KC_GRAVE)
+#define UT_SPC LT(_UTL, KC_SPACE)
 //Define layers for BDN9
 enum BDN9_layers {
     _BROWSE = 0,
@@ -36,12 +34,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         __________________________________________________
         | KNB_0: Vol Dn/Up  |       | KNB_1: Scroll      |
         | Press: Mute       |       | Press: Play/Pause  |
-        | ----------------- | LAYER | -----------------  |
+        | ----------------- | Space | -----------------  |
         | Scroll Left       | Home  | Scroll Right       |
         | Back              | End   | Forward            |
      */
     [_BROWSE] = LAYOUT(
-        KC_MUTE ,  MO(_UTIL)  , KC_MPLY,
+        KC_MUTE ,  UT_SPC     , KC_MPLY,
         KC_WH_L ,  KC_HOME    , KC_WH_R,
         KC_WBAK ,  KC_END     , KC_WFWD
     ),
@@ -50,12 +48,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         ____________________________________________________
         | KNB_0: Up/Down    |       | KNB_1: Tab/Shift Tab |
         | Press: Enter      |       | Press: Tilde         |
-        | ----------------- | LAYER | -----------------    |
+        | ----------------- |   ~   | -----------------    |
         | Control + Shift   | KP +  | Live/Preview Render  |
         | Control + Enter   | KP -  | Control + B          |
      */
     [_KATANA] = LAYOUT(
-        KC_ENT  ,  MO(_UTIL)  , KC_GRAVE    ,
+        KC_ENT  ,  UT_TILD , KC_GRAVE    ,
         KTNA_UP ,  KC_PLUS , TD(KTNA_RENDER) ,
         KTNA_IN ,  KC_MINS , LCTL(KC_B)
     ),
@@ -90,11 +88,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 //------------------------------------------------------------------
     /*  Utility Layer for adjusting Layer,LEDs,RESET,Etc
         _________________________________________________
-        | KNB_0: LED +/-       |       | KNB_1: LED MODE|
-        | Press: Static LED    |       | Press: LED Off |
-        | -------------------- | LAYER | -------------- |
-        |         RESET        | LED + | Live Render    |
-        |        RGB Mode      | LED - | Control + B    |
+        | KNB_0: LED +/-       |        | KNB_1: LED MODE|
+        | Press: Static LED    |        | Press: LED Off |
+        | -------------------- |  LAYER | -------------- |
+        |                      | BROWSE |     KATANA     |
+        |        FEEDBIN       |   RV   |                |
 */
     [_UTIL] = LAYOUT(
         RGB_MODE_PLAIN  ,  _______      , RGB_TOG     ,
@@ -198,22 +196,22 @@ void update_led(void) {
    {
     switch (biton32(layer_state)) {
       case _BROWSE:
-        rgblight_setrgb(RGB_WHITE); // Browse color.
+        rgblight_sethsv(103,0,170); // Browse color.
         break;
       case _KATANA:
-        rgblight_setrgb(214,162,0); // Katana color.
+        rgblight_sethsv(38,170,170); // Katana color.
         break;
       case _RV:
-        rgblight_setrgb(49,170,0); // RV color.
+        rgblight_sethsv(103,170,170); // RV color.
         break;
       case _FEEDBIN:
-        rgblight_setrgb(0,64,160); // Feedbin color.
+        rgblight_sethsv(150,170,170); // Feedbin color.
         break;
       case _UTIL:
-        rgblight_setrgb(0,175,106); // Util color.
+        rgblight_sethsv(0,170,170); // Util color.
         break;
       default:
-        rgblight_setrgb(RGB_WHITE); // 
+        rgblight_sethsv(RGB_WHITE); // 
         break;
     }
   }
