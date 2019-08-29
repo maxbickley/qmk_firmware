@@ -17,26 +17,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#define ONESHOT_TAP_TOGGLE 5  /* Tapping this number of times holds the key until tapped once again. */
-#define ONESHOT_TIMEOUT 5000  /* Time (in ms) before the one shot key is released */
-
 /* Use I2C or Serial, not both */
 #define USE_SERIAL
 // #define USE_I2C
 
 /* Select hand configuration */
-//#define MASTER_LEFT
+#define MASTER_LEFT
 // #define MASTER_RIGHT
- #define EE_HANDS
+// #define EE_HANDS
 
-/*#undef RGBLED_NUM
+#undef RGBLED_NUM
 #define RGBLIGHT_ANIMATIONS
 #define RGBLED_NUM 14
 #define RGBLIGHT_HUE_STEP 8
 #define RGBLIGHT_SAT_STEP 8
 #define RGBLIGHT_VAL_STEP 8
-*/
-
-
-#define TAPPING_TERM 250
-#define DANCING_TERM 175
