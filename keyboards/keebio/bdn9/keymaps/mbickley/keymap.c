@@ -23,6 +23,7 @@
 enum BDN9_layers {
     _BROWSE = 0,
     _KATANA,
+    _NUKE,
     _RV,
     _FEEDBIN,
     _UTIL,
@@ -56,6 +57,20 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_ENT  ,  UT_TILD , KC_GRAVE    ,
         KTNA_UP ,  KC_PLUS , TD(KTNA_RENDER) ,
         KTNA_IN ,  KC_MINS , LCTL(KC_B)
+    ),
+//----------------------------------------------------------
+    /*  Nuke Layout -- General Nuke Work
+        ____________________________________________________
+        | KNB_0: Up/Down    |                 | KNB_1: +/-        |
+        | Press: Enter      |                 | Press: P - Pause  |
+        | ----------------- |      1, 2, 3    | ----------------- |
+        |     M - Merge     |  Numpad 8 - Up  | Ctl - Enter       |
+        | Numpad 4 - Left   | Numpad 2 - Down | Numpad 6 - Right  |
+     */
+    [_NUKE] = LAYOUT(
+        KC_ENT ,  UT_TILD , KC_P         ,
+        KC_M   ,  KC_P8   , LCTL(KC_ENT) ,
+        KC_P4  ,  KC_P2   , KC_P6
     ),
 //------------------------------------------------------------------
     /*  RV Layout -- RV Hotkeys
@@ -97,7 +112,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_UTIL] = LAYOUT(
         RGB_MODE_PLAIN  ,  _______      , RGB_TOG     ,
          _______        ,  TO(_BROWSE)  , TO(_KATANA) ,
-        TO(_FEEDBIN)    ,  TO(_RV)      ,  _______
+        TO(_FEEDBIN)    ,  TO(_RV)      , TO(_NUKE)
     ),   
 };
 
