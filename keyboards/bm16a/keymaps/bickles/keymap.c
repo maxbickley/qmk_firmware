@@ -14,157 +14,216 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include QMK_KEYBOARD_H
+// Add Layers Here
 enum layers {
   _BASE = 0,
-  _FN1,
-  _FN2,
+  _GAME,
+  _OBS,
+  _SKETCHUP,
+  _NUM,
+  _UTIL
 };
+//Advance Layers Macro
+#define HIGHEST_LAYER _SKETCHUP //replace X with your highest layer
+
+static uint8_t current_layer = 0;
+
 enum custom_keycodes {
-  DIVIDE_BY_2,
-  MULTPL_BY_2,
+    KC_LUP = SAFE_RANGE, //cycle layers in up direction
+    KC_LDN //cycle layers in down direction
+#define ENUT LT(_UTIL,KC_ENT) //Enter/Until Combo key
+//#define ENUT TG(_UTIL) //Enter/Until Combo key
+
+#define BASE TO(_BASE) //Set Base Layer
+#define GAME TO(_GAME) //Set Game Layer
+#define OBS TO(_OBS) //Set OBS Layer
+#define SKTU TO(_SKETCHUP) //Set SketchUp Layer
+//Windows Hotkeys
+#define NXDS LGUI(LCTL(KC_RIGHT)) //Next Desktop
+#define PVDS LGUI(LCTL(KC_LEFT)) //Previous Desktop
+//OBS Hotykeys
+#define OB_ST LCTL(LALT(LSFT(KC_L)))
+#define OB_TS LCTL(LALT(LSFT(KC_K)))
+#define OB_HM LCTL(LALT(LSFT(KC_J)))
+#define OB_MC LCTL(LALT(LSFT(KC_M)))
+#define OB_1 LCTL(LSFT(1))
+#define OB_2 LCTL(LSFT(2))
+#define OB_3 LCTL(LSFT(3))
+#define OB_4 LCTL(LSFT(4))
+#define OB_5 LCTL(LSFT(5))
+#define OB_6 LCTL(LSFT(6))
+#define OB_7 LCTL(LSFT(7))
+#define OB_8 LCTL(LSFT(8))
 };
-#define KT_UP LCTL(KC_BSPACE)
-#define KT_DN LCTL(KC_ENT)
-#define RENDER LCTL(KC_P)
-#define LRENDER LCTL(LSFT(KC_P))
-#define ADD_TO_CAT LALT(KC_C)
-#define CTL_B LCTL(KC_B)
-// setup Quad Tap Dance
-typedef struct {
-  bool is_press_action;
-  int state;
-} tap;
-
-enum {
-  SINGLE_TAP = 1,
-  SINGLE_HOLD = 2,
-  DOUBLE_TAP = 3,
-  DOUBLE_HOLD = 4,
-  DOUBLE_SINGLE_TAP = 5, //send two single taps
-  TRIPLE_TAP = 6,
-  TRIPLE_HOLD = 7
-};
-
-//Tap dance enums
-enum {
-  X_CTL = 0,
-};
-
-int cur_dance (qk_tap_dance_state_t *state);
-
-//for the x tap dance. Put it here so it can be used in any keymap
-void x_finished (qk_tap_dance_state_t *state, void *user_data);
-void x_reset (qk_tap_dance_state_t *state, void *user_data);
-
-// End tapdance setup
-
-//Tap Dance Definitions
-
-int cur_dance (qk_tap_dance_state_t *state) {
-  if (state->count == 1) {
-    if (state->pressed) return SINGLE_HOLD;
-    else return SINGLE_TAP;
-  }
-  else if (state->count == 2) {
-    if (state->pressed) return DOUBLE_HOLD;
-    else return DOUBLE_TAP;
-  }
-  else if (state->count == 3) {
-    if (!state->pressed) return TRIPLE_TAP;
-    else return TRIPLE_HOLD;
-  }
-  else return 8; //magic number. At some point this method will expand to work for more presses
-}
-//instanalize an instance of 'tap' for the 'x' tap dance.
-static tap xtap_state = {
-  .is_press_action = true,
-  .state = 0
-};
-void x_finished (qk_tap_dance_state_t *state, void *user_data) {
-  xtap_state.state = cur_dance(state);
-  switch (xtap_state.state) {
-    case SINGLE_TAP: layer_move(_BASE); break;
-    case DOUBLE_TAP: layer_move(_FN1); break;
-    case TRIPLE_TAP: layer_move(_FN2); break;
- }
-}
-void x_reset (qk_tap_dance_state_t *state, void *user_data) {
-  switch (xtap_state.state) {
-    case SINGLE_TAP: layer_move(_BASE); break;
-    case DOUBLE_TAP: layer_move(_FN1); break;
-    case TRIPLE_TAP: layer_move(_FN2); break;
-  }
-  xtap_state.state = 0;
-}
-
-qk_tap_dance_action_t tap_dance_actions[] = {
-  [X_CTL]     = ACTION_TAP_DANCE_FN_ADVANCED(NULL,x_finished, x_reset)
-};
-// End TapDance Setup
-
-// Layout
-const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
-
-  [_BASE] = LAYOUT_ortho_4x4(
-    TD(X_CTL),  MULTPL_BY_2,    KC_KP_PLUS,    KT_UP , \
-    KC_VOLU,    DIVIDE_BY_2,    KC_KP_MINUS,   KT_DN, \
-    KC_VOLD, KC_VOLU,           CTL_B,         LRENDER, \
-    MO(_FN1), ADD_TO_CAT,       LRENDER,       RENDER  \
-  ),
-  [_FN1] = LAYOUT_ortho_4x4(
-    TD(X_CTL),   KC_P7,    RESET,    KC_P9,   \
-    KC_TAB,   KC_P4,    KC_P5,    KC_P6,   \
-    KC_ENT,   KC_P1,    KC_P2,    KC_P3,   \
-    _______,  KC_P0,    KC_P0,    KC_DOT   \
-  ),
-  [_FN2] = LAYOUT_ortho_4x4(
-    TD(X_CTL),  RGB_HUI,  RGB_SAI,  RGB_VAI, \
-    RGB_MOD,  RGB_HUD,  RGB_SAD,  RGB_VAD, \
-    TD(X_CTL),  _______,  _______,  RESET,   \
-    BL_STEP,  RESET,  _______,  _______   \
-  )
-
-};
-
 // Common LED indicator
 void update_led(void) {
    {
     switch (biton32(layer_state)) {
-      case _FN1:
-        rgblight_setrgb(RGB_CORAL);
-        break;
-      case _FN2:
-        rgblight_setrgb(RGB_RED);
-        break;
-      default:
+      case _BASE:
         rgblight_setrgb(RGB_WHITE);
+        break;
+      case _GAME:
+        rgblight_setrgb(RGB_BLUE);
+        break;
+      case _OBS:
+        rgblight_setrgb(RGB_GREEN);
+        break;
+      case _SKETCHUP:
+        rgblight_setrgb(RGB_ORANGE);
         break;
     }
   }
 }
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+  switch (keycode) {
+  case KC_LUP:
+    if(record->event.pressed) {
+      if (current_layer == HIGHEST_LAYER){
+        for (int i=1; i<=HIGHEST_LAYER; i++){
+          layer_off(i);
+        }
+        current_layer=0;
+      } else { 
+        current_layer++;
+        layer_on(current_layer);
+      }
+    }
+    update_led();
+    return false;
+
+  case KC_LDN:
+    if(record->event.pressed) {
+      if (current_layer == 0){
+        for (int i=1; i<=HIGHEST_LAYER; i++){
+          layer_on(i);
+        }
+        current_layer=HIGHEST_LAYER;
+      } else {
+        layer_off(current_layer);
+        current_layer--;
+      }
+    }
+    update_led();
+    return false;
+  default:
+    return true;
+  }
+
+}   
+
+const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
+
+  /* BASE //WHITE
+   * ,---------------------------.
+   * |   1  |   2  |   3  |   4  |
+   * |------+------+------+------|
+   * |   5  |   6  |   7  |   8  |
+   * |------+------+------+------|
+   * | LEFT |   9  |   0  | RIGHT|
+   * |------+------+------+------|
+   * | BKSP |   ,  |   .  |EN/UT |
+   * `---------------------------'
+   */
+  [_BASE] = LAYOUT_ortho_4x4(
+    KC_1,KC_2,KC_3,KC_4, \
+    KC_5,KC_6,KC_7,KC_8, \
+    KC_LEFT,KC_9,KC_0,KC_RIGHT, \
+    KC_BSPC,KC_COMM,KC_DOT,ENUT  \
+  ),
+      /* UTIL
+   * ,---------------------------.
+   * | BASE | GAME | OBS  | SKTU |
+   * |------+------+------+------|
+   * | PVDS | ____ | ____ | NXDS |
+   * |------+------+------+------|
+   * | PVLY | RGBU | ____ | NXLY |
+   * |------+------+------+------|
+   * | RSET | RGBD | ____ | ____ |
+   * `---------------------------'
+   */
+  [_UTIL] = LAYOUT_ortho_4x4(
+    BASE, GAME, OBS, SKTU , \
+    PVDS, _______, _______, NXDS, \
+    KC_LDN, RGB_VAI, _______, KC_LUP, \
+    RESET, RGB_VAD, _______, ENUT  \
+  ),
+  /* GAME //BLUE
+   * ,---------------------------.
+   * |   1  |   2  |   3  |   4  |
+   * |------+------+------+------|
+   * |   5  |   6  |   7  |   8  |
+   * |------+------+------+------|
+   * |   ~  |   9  |   0  | ____ |
+   * |------+------+------+------|
+   * | GUI  | ____ | ____ |EN/UT |
+   * `---------------------------'
+   */
+  [_GAME] = LAYOUT_ortho_4x4(
+    KC_1   ,KC_2    ,KC_3    ,KC_4, \
+    KC_5   ,KC_6    ,KC_7    ,KC_8, \
+    KC_GRV ,KC_9    ,KC_0    ,_______, \
+    KC_LGUI, _______, _______, ENUT  \
+  ),
+  /* OBS //GREEN
+   * ,---------------------------.
+   * | OBS1 | OBS2 | OBS3 | OBS4 |
+   * |------+------+------+------|
+   * | OBS5 | OBS6 | OBS7 | OBS8 |
+   * |------+------+------+------|
+   * | DEFT |START | PTT  | TRAN |
+   * |------+------+------+------|
+   * | ____ | ____ | ____ |EN/UT |
+   * `---------------------------'
+   */
+  [_OBS] = LAYOUT_ortho_4x4(
+    OB_1   ,OB_2    ,OB_3    ,OB_4, \
+    OB_5   ,OB_6    ,OB_7    ,OB_8, \
+    OB_HM  ,OB_ST   ,OB_MC   ,OB_TS, \
+    KC_LGUI, _______, _______, ENUT  \
+  ),
+  /* SKETCHUP //YELLOW
+   * ,---------------------------.
+   * | SPACE|   M  |   P  |   T  |
+   * |------+------+------+------|
+   * |  Z   |   Q  |   R  |   B  |
+   * |------+------+------+------|
+   * | LEFT | ____ | ____ | RIGHT|
+   * |------+------+------+------|
+   * |  ESC | ____ | NUM  |EN/UT |
+   * `---------------------------'
+   */
+  [_SKETCHUP] = LAYOUT_ortho_4x4(
+    KC_SPACE ,KC_M   ,KC_P    ,KC_T , \
+    KC_Z     ,KC_Q   ,KC_R    ,KC_B   , \
+    KC_LEFT  ,_______,_______ ,KC_RIGHT, \
+    KC_ESC   ,_______,MO(_NUM),ENUT  \
+  ),
+  /* NUM 
+   * ,---------------------------.
+   * |   1  |   2  |   3  |   4  |
+   * |------+------+------+------|
+   * |   5  |   6  |   7  |   8  |
+   * |------+------+------+------|
+   * |   ,  |   9  |   0  |   .  |
+   * |------+------+------+------|
+   * |  TAB | ____ | ____ |EN/UT |
+   * `---------------------------'
+   */
+  [_NUM] = LAYOUT_ortho_4x4(
+    KC_1   ,KC_2   ,KC_3   ,KC_4, \
+    KC_5   ,KC_6   ,KC_7   ,KC_8, \
+    KC_COMM,KC_9   ,KC_0    ,KC_DOT, \
+    KC_TAB ,KC_MINS,_______,ENUT  \
+  )
+};
+
+
 uint32_t layer_state_set_user(uint32_t state) {
   update_led();
   return state;
-}
-// Macro's
-bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-  switch (keycode) {
-    case DIVIDE_BY_2:
-      if (record->event.pressed) {
-        register_code16(KC_BTN1);
-        unregister_code16(KC_BTN1);
-        SEND_STRING("/2" SS_TAP(X_ENTER));
-      } else {
-      }
-      break;
-    case MULTPL_BY_2:
-      if (record->event.pressed) {
-        register_code16(KC_BTN1);
-        unregister_code16(KC_BTN1);
-        SEND_STRING("*2" SS_TAP(X_ENTER));
-      } else {
-      }
-      break;
-  }
-  return true;
-}
+} 
+
+uint32_t layer_state_set_kb(uint32_t state) {
+  update_led();
+  return state;
+} 
