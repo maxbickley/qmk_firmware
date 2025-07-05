@@ -124,7 +124,7 @@
             "solid_reactive_simple": true,
             "solid_reactive": true
         },
-        "driver": "ws2812",
+        "driver": "ws2812_i2c",
         "split_count": [37, 37],
         "layout": [
             {"flags": 4, "matrix": [0, 5], "x": 72, "y": 4},   // L SW06
